@@ -5,9 +5,24 @@ from difflib import get_close_matches
 
 def definition(word):
     '''This function returns the available definitions(s) of the input'''
-    for i in data[word]:
-        print(i)
-    return("")
+    if data.__contains__(word):
+        return(data[word])
+    elif data.__contains__(word.lower()):
+        return(data[word.lower()])
+    # Generate suggestions for user
+    elif len(get_close_matches(word, data.keys(), cutoff=0.8)) > 0:
+        choice = input("Did you mean to type %s ?(y/n):"
+                       % get_close_matches(word, data.keys(), cutoff=0.8)[0])
+        choice = choice.lower()
+        if choice == 'y':
+            ip = get_close_matches(word, data.keys(), cutoff=0.8)[0]
+            return(data[ip])
+        elif choice == 'n':
+            return("Please try again with the correct spelling")
+        else:
+            return("Invalid input!")
+    else:
+        return("Could not find a similar word!!")
 
 
 # Load dictionary data from data.json to python dictionary
@@ -15,30 +30,15 @@ data = json.load(open('data.json', 'r'))
 
 # Infinite loop for processing
 while True:
-    # Accept case-insensitive input from user
-    ip = str(input("Enter word:(!q to quit)  ")).lower()
+    ip = input("Enter word:(!q to quit)  ")
     # Exit from program - user choice
-    if ip == '!q':
+    if ip == '!q' or ip == '!Q':
         break
-    # Check dictionary for definition
-    elif data.__contains__(ip):
-        print(definition(ip))
-    # Check dictionary for definition of input as a proper noun
-    elif data.__contains__(ip[0].upper() + ip[1:]):
-        print(definition(ip[0].upper() + ip[1:]))
-    # If exact word is not found, provide a suggestion
-    elif len(get_close_matches(ip, data.keys(), cutoff=0.8)) > 0:
-        print("Did you mean to type",
-              get_close_matches(ip, data.keys(), cutoff=0.8)[0], "?(y/n):")
-        choice = str(input()).lower()
-        # Provide output if suggested word is accepted by user
-        if choice == 'y':
-            ip = get_close_matches(ip, data.keys(), cutoff=0.8)[0]
-            print(definition(ip))
-        elif choice == 'n':
-            print("Try again with the corrected spelling or press !q to quit")
-        else:
-            print()
-    # If no definition or suggestion was found
     else:
-        print("No such word exists!! \nEnter '!q' to quit!!!")
+        # Check dictionary for definition
+        output = definition(ip)
+        if type(output) == list:
+            for i in output:
+                print(i)
+        else:
+            print(output)
